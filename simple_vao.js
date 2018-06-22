@@ -34,8 +34,6 @@ function init() {
          0.5, -0.5, 0.0
     ]);
 
-    const quad_indices = new Int8Array([0, 1, 2, 0, 2, 3]);
-
 
     const vert = [
         "#version 300 es",
@@ -65,7 +63,7 @@ function init() {
         console.error("failed to create shader prog");
         return;
     }
-    console.log("we are ok");
+    console.log("we are set");
 
     var vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
@@ -76,10 +74,10 @@ function init() {
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
-    var indexBuff = gl.createBuffer();
-    
     const w = gl.canvas.width;
     const h = gl.canvas.height;
+
+    //math api ref: http://math.hws.edu/graphicsbook/c7/s1.html#webgl3d.1.2
     proj = mat4.perspective( mat4.create(), 33 * 3.14 / 180, w/h, 1, 2000 );
 
     model = mat4.create();

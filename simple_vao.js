@@ -5,8 +5,8 @@
 
 
 /*
- Instanced rendering + UBO test
-
+ 
+Simple VAO
 */
 
 var gl = null;
@@ -102,8 +102,16 @@ function init() {
 function onResize()
 {
     mat4.identity(proj);
-    const w = gl.canvas.width;
-    const h = gl.canvas.height;
+   
+    const w  =  window.innerWidth;
+    const h =   window.innerHeight;
+
+    canvas.width = w;
+    canvas.height = h;
+
+    gl.viewport(0,0,w,h);
+
+    
     proj = mat4.perspective(proj, 33 * 3.14 / 180, w/h, 1, 2000 );
     mat4.multiply( mvp, proj, model );
     gl.uniformMatrix4fv(mvpLoc, false, mvp );

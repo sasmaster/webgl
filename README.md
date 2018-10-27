@@ -20,5 +20,7 @@ simple_vao.js - shows how to draw a quad using VAO and indexed buffer (drawEleme
 
 ubo_instanced.js - show how to render 1024 quads using Uniform buffer containing transforms in a single draw call.
 
+texture_mapping.js - shows how to render a mesh with texture mapped onto it.
+
 
 

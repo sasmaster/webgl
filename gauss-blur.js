@@ -1,7 +1,7 @@
 var gl = null;
 var mvp,proj,model, mvpLoc,texLoc,tex;
 var images =[];
-
+var canvas = null;
 function init()
 {
    var image = new Image();
@@ -17,7 +17,7 @@ function init()
 
 function run()
 {
-    var canvas = document.createElement('canvas');
+    canvas = document.createElement('canvas');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     document.body.appendChild(canvas);
@@ -44,19 +44,31 @@ function run()
         "}"
     ].join('\n');
 
-    const frag = [
+    const fragFixedGaussKernel = [
         "#version 300 es",
         "precision highp float; ",
         "precision highp int;",
         "uniform sampler2D tex;",
+        "const float offset[3] = float[](0.0, 1.3846153846, 3.2307692308 );",
+        "const float weight[3] = float[](0.2270270270, 0.3162162162, 0.0702702703);",
+              
+        "const float scaleFactor = 1.0;",
         "in vec2 v_uv;",
         "out vec4 oColor;",
         "void main(){",
-        "oColor =  texture(tex,v_uv);",
+        "vec2 texelSize = 1.0 / vec2(textureSize(tex,0));",
+        "oColor = texture(tex, v_uv) * weight[0];",
+       
+        "for (int i=1; i<3; i++) {",
+        "   vec2 texelOffset = vec2(0.0, offset[i] ) * scaleFactor  * texelSize;",
+        "   oColor += texture(tex, v_uv + texelOffset ) * weight[i] ;",         
+        "   oColor += texture(tex, v_uv - texelOffset ) * weight[i] ;",       
+        "}",
+        "//oColor = texture(tex, v_uv);",   
         "}"
     ].join('\n');
 
-    var prog = createProgram(gl, vert, frag);
+    var prog = createProgram(gl, vert, fragFixedGaussKernel);
     if (!prog == null) {
         console.error("failed to create shader prog");
         return;
@@ -92,7 +104,7 @@ function run()
    
     mat4.scale(model,model,[128,128,1]);
 
-    mat4.translate(model,model,[0,0,-400]);
+    mat4.translate(model,model,[0,0,-200]);
 
     gl.useProgram(prog);
     mvpLoc = gl.getUniformLocation(prog, "mvp");

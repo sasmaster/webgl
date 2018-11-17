@@ -22,5 +22,8 @@ ubo_instanced.js - show how to render 1024 quads using Uniform buffer containing
 
 texture_mapping.js - shows how to render a mesh with texture mapped onto it.
 
+frame_buffer.js - shows how to render to texture using offscreen fbo.
+
+gauss-blur.js - explores different moethods of gaussian blur image effect (work in progress)
 
 

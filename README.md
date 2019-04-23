@@ -16,7 +16,7 @@ Currently only glMatrix lib for transformations.
 
 simple_vao.js - shows how to draw a quad using VAO (Vertex Array Object)
 
-simple_vao.js - shows how to draw a quad using VAO and indexed buffer (drawElements)
+indexed_vao.js - shows how to draw a quad using VAO and indexed buffer (drawElements)
 
 ubo_instanced.js - show how to render 1024 quads using Uniform buffer containing transforms in a single draw call.
 

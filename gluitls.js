@@ -34,7 +34,7 @@ window.createProgram = function(gl, vertexShaderSource, fragmentShaderSource)
     return program;
 };
 
-function createGLTexture(unit, format, w, h, flip, genMipmaps, data)
+function createGLTexture(unit, format, w, h,filterType, flip, genMipmaps, data)
  {
 
     var texture = gl.createTexture();
@@ -42,8 +42,10 @@ function createGLTexture(unit, format, w, h, flip, genMipmaps, data)
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S,filterType);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T,filterType);
+
 
     var intFormat = gl.RGB8;
     if (format == gl.RGBA) {

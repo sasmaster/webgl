@@ -2,7 +2,7 @@
  * This sample shows how to map a texture onto the full screen
  * but only onto the area equal to the mapped texture size.
  * textureSize() and gl_FragCoord comes handy here.Additionally,
- * as WebGL API lacks weap mode GL_CLAMP_TO_BORDER,this sample shows
+ * as WebGL API lacks the GL_CLAMP_TO_BORDER wrap mode,this sample shows
  * how to emulate this behavior in GLSL
  */
 var gl = null;
@@ -31,7 +31,7 @@ function run()
     document.body.appendChild(canvas);
 
 
-     gl = canvas.getContext('webgl2', { antialias: false });
+    gl = canvas.getContext('webgl2', { antialias: false });
     var isWebGL2 = !!gl;
     if (isWebGL2 === false) {
         console.error("WebGL2 context not supported");

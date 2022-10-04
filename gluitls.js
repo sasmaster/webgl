@@ -1,11 +1,12 @@
-function createShader(gl, source, type) {
+function createShader(gl, source, type)
+{
     var shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     return shader;
 }
 
-window.createProgram = function(gl, vertexShaderSource, fragmentShaderSource)
+function createProgram(gl, vertexShaderSource, fragmentShaderSource)
 {
     var program = gl.createProgram();
     var vshader = createShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
@@ -34,15 +35,14 @@ window.createProgram = function(gl, vertexShaderSource, fragmentShaderSource)
     return program;
 };
 
-function createGLTexture(unit, format, w, h,filterType, flip, genMipmaps, data)
+function createGLTexture(gl, format, w, h,filterType, flip, genMipmaps, data)
  {
 
     var texture = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0 + unit);
+   // gl.activeTexture(gl.TEXTURE0 + unit);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S,filterType);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T,filterType);
 
@@ -72,7 +72,24 @@ function createGLTexture(unit, format, w, h,filterType, flip, genMipmaps, data)
 
 }
 
-function createFrameBuffer(w, h, depth, tex)
+function updateGLTexture(gl,texture, format, genMipmaps, data)
+ {
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texSubImage2D(
+        gl.TEXTURE_2D, 0, 0, 0, format,
+        gl.UNSIGNED_BYTE, data);
+
+    if (genMipmaps === true)
+    {
+        gl.generateMipmap(gl.TEXTURE_2D);
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+ }
+
+function createFrameBuffer(gl,w, h, depth, tex)
 {
     var fboObj = {};
     var fbo = 0;
@@ -113,6 +130,5 @@ function createFrameBuffer(w, h, depth, tex)
     console.log(fbo);
 
     fboObj.fbo = fbo;
-
     return fboObj;
 }

@@ -98,8 +98,8 @@ function run()
     mvpLoc = gl.getUniformLocation(prog, "mvp");
     texLoc = gl.getUniformLocation(prog,"tex");
     var img = images[0];
-    tex = createGLTexture(0,gl.RGB,img.width,img.height,false,false,img);
-
+    tex = createGLTexture(gl,gl.RGB,img.width,img.height,gl.CLAMP_TO_EDGE,false,false,img);
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.uniform1i(texLoc, 0);
 
@@ -112,7 +112,7 @@ function run()
    requestAnimationFrame(render);
 
 }
-
+/*
 function createGLTexture(unit,format,w,h,flip,genMipmaps,data)
 {
      
@@ -149,7 +149,7 @@ function createGLTexture(unit,format,w,h,flip,genMipmaps,data)
 
      return texture;
 
-}
+}*/
 
 function onResize()
 {
@@ -192,3 +192,5 @@ function render()
     requestAnimationFrame(render);
   
 }
+
+window.addEventListener('load',init);

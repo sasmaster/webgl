@@ -2,9 +2,10 @@ var gl = null;
 var mvp, proj, model, mvpLoc, modelLoc, texLoc, tex;
 var images = [];
 var canvas = null;
-var planeVAO = {};
 var cubeVAO = {};
 var fbo = null;
+const FBO_WIDTH = 1920;
+const FBO_HEIGHT = 1080;
 function init() {
     var image = new Image();
     image.src = "assets/lena_color_512.png";
@@ -20,12 +21,12 @@ function init() {
 function run() {
 
     canvas = document.createElement('canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = FBO_WIDTH;// window.innerWidth;
+    canvas.height =FBO_HEIGHT;// window.innerHeight;
     document.body.appendChild(canvas);
 
 
-    gl = canvas.getContext('webgl2', { antialias: false });
+    gl = canvas.getContext('webgl2', { antialias: false ,alpha:true});
     var isWebGL2 = !!gl;
     if (isWebGL2 === false) {
         console.error("WebGL2 context not supported");
@@ -69,28 +70,11 @@ function run() {
 
     const FLOAT_SIZE = Float32Array.BYTES_PER_ELEMENT;
     const STRIDE = FLOAT_SIZE * 5;
-    //=================   Create Unit plane ========================
-    var vao, buffer;
-
-    vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, create_plane_vt(), gl.STATIC_DRAW);
-
-    //vertex attrib
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, STRIDE, 0);
-    //UV attrib
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, STRIDE, FLOAT_SIZE * 3);
-    planeVAO.vao = vao;
-    planeVAO.buffer = buffer;
-
+    
     //====================== Create unit cube =====================
-    vao = gl.createVertexArray();
+    var vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
-    buffer = gl.createBuffer();
+    var buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, create_cube_vt(), gl.STATIC_DRAW);
 
@@ -132,17 +116,22 @@ function run() {
     modelLoc = gl.getUniformLocation(prog, "model");
     var img = images[0];
 
-    tex = createGLTexture(gl,0, gl.RGB, img.width, img.height, false, false, img);
+    tex = createGLTexture(gl, gl.RGB, img.width, img.height,gl.CLAMP_TO_EDGE, false, false, img);
 
-    var renderTex = createGLTexture(gl,0, gl.RGBA, 1280, 720, false, false, null);
+    var msaaRenderBuffer = createMultisampledRenderBuffer(gl, gl.RGBA8 , FBO_WIDTH, FBO_HEIGHT,4);
+    var msaaDepthBuffer = createMultisampledRenderBuffer(gl,  gl.DEPTH_COMPONENT16, FBO_WIDTH, FBO_HEIGHT,4);
 
-    //create offscreen FBO:
-    fbo = createFrameBuffer(gl,1280, 720, true, renderTex);
+    //create offscreen multisampled FBO:
+    fbo = createFrameBuffer(gl, null);
+    bindRenderBuffer(gl,fbo,msaaRenderBuffer,gl.COLOR_ATTACHMENT0);
+    bindDepthBuffer(gl,fbo,msaaDepthBuffer);
     gl.uniform1i(texLoc, 0);
+    gl.activeTexture(gl.TEXTURE0);
 
     mat4.multiply(mvp, proj, model);
     gl.uniformMatrix4fv(mvpLoc, false, mvp);
 
+   // gl.enable(gl.GL_MULTISAMPLE);
     gl.enable(gl.DEPTH_TEST);
     gl.frontFace(gl.CCW);
     gl.enable(gl.CULL_FACE);
@@ -178,9 +167,9 @@ function onResize()
 var rot = 0;
 function render() {
 
-    //Pass 1: (Render to texure)
+    //Pass 1: (Render to MSAA FBO)
     gl.viewport(0, 0, 1280, 720);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.fbo);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, fbo.fbo);
     gl.clearColor(0.3, 0.3, 0.3, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -195,6 +184,7 @@ function render() {
     rot += 0.02;
     mat4.multiply(mvp, proj, model);
 
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.uniformMatrix4fv(mvpLoc, false, mvp);
     gl.bindVertexArray(cubeVAO.vao);
@@ -206,25 +196,11 @@ function render() {
     const w = window.innerWidth;
     const h = window.innerHeight;
     gl.viewport(0, 0, w, h);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-
-    mat4.identity(model);
-    mat4.translate(model, model, [0, 0, -400]);
-    mat4.rotate(model, model, rot, [0, 0, 1]);
-    mat4.scale(model, model, [120, 100, 1]);
-
-    mat4.multiply(mvp, proj, model);
-
-    gl.bindTexture(gl.TEXTURE_2D, fbo.texRT);
-
-
-    gl.uniformMatrix4fv(mvpLoc, false, mvp);
-    gl.bindVertexArray(planeVAO.vao);
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo.fbo);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+    gl.blitFramebuffer(0, 0, 1280, 720, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+   
     requestAnimationFrame(render);
 
 }

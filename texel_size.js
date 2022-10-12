@@ -95,8 +95,6 @@ function run()
 
 function onResize()
 {
-  
-   
     const w  =  window.innerWidth;
     const h =   window.innerHeight;
 

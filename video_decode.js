@@ -4,7 +4,7 @@
 
 var gl = null;
 var texLoc,tex,colorLoc;
-var images =[];
+
 var canvas = null;
 var pendingFrame = null;
 var startTime = null;
@@ -33,7 +33,7 @@ function setStatus(type, message)
   render(frame);
 
    // IMPORTANT: Release the frame to avoid stalling the decoder.
-   frame.close();
+   //frame.close();
  }
 
  function onDecodeError(e)
@@ -55,6 +55,7 @@ function init()
     onConfig(config) {
       setStatus("decode", `${config.codec} @ ${config.codedWidth}x${config.codedHeight}`);
       decoder.configure(config);
+      run(config);
     },
     onChunk(chunk) {
       decoder.decode(chunk);
@@ -62,13 +63,10 @@ function init()
     setStatus//make this function available for MP4Demuxer class scope
     });
 
-    run();
-  
 }
 
 
-
-function run()
+function run(config)
 {
     canvas = document.createElement('canvas');
     canvas.width = window.innerWidth;
@@ -78,7 +76,8 @@ function run()
 
     gl = canvas.getContext('webgl2', { antialias: false });
     var isWebGL2 = !!gl;
-    if (isWebGL2 === false) {
+    if (isWebGL2 === false)
+    {
         console.error("WebGL2 context not supported");
         return;
     }
@@ -93,12 +92,11 @@ function run()
         "}"
     ].join('\n');
 
-    const fragMb = [
+    const frag = [
         "#version 300 es",
-        "precision highp float;",
+        "precision highp float; ",
         "precision highp int;",
         "uniform sampler2D tex;",
-        "uniform vec4 borderColor;",
         "out vec4 oColor;",
         "void main(){",
         "vec2 textureDims = vec2(textureSize(tex,0));//WEBGL 2.0!",
@@ -108,29 +106,24 @@ function run()
         "}"
     ].join('\n');
 
-    var prog = createProgram(gl, vert, fragMb);
+    var prog = createProgram(gl, vert, frag);
     if (!prog == null)
     {
         console.error("failed to create shader prog");
         return;
     }
     
-
-  /*
     gl.useProgram(prog);
 
     texLoc = gl.getUniformLocation(prog,"tex");
-    colorLoc = gl.getUniformLocation(prog,"borderColor");
-    var img = images[0];
-    tex = createGLTexture(0,gl.RGB,img.width,img.height,gl.CLAMP_TO_EDGE,false,false,img);
+    //colorLoc = gl.getUniformLocation(prog,"borderColor");
+    
+    tex = createGLTexture(gl,gl.RGB,config.codedWidth,config.codedHeight,gl.CLAMP_TO_EDGE,false,false,null);
 
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.uniform1i(texLoc, 0);
-    gl.uniform4f(colorLoc,0.2,0.0,1.0,1.0);
- */
-   window.addEventListener('resize',  onResize);
-
- //  requestAnimationFrame(render);
+    gl.activeTexture(gl.TEXTURE0);
+    window.addEventListener('resize',  onResize);
 
 }
 
@@ -138,14 +131,10 @@ function run()
 
 function onResize()
 {
-  
-   
     const w  =  window.innerWidth;
     const h =   window.innerHeight;
-
     canvas.width = w;
     canvas.height = h;
-
     gl.viewport(0,0,w,h);
 }
 
@@ -154,9 +143,12 @@ function render(frame)
     gl.clearColor(0.2,0.2,0.2,1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    updateGLTexture(gl,tex,gl.RGB,false,frame);
+    frame.close();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.drawArrays(gl.TRIANGLES,0,3);
 
-    requestAnimationFrame(render);
+   // requestAnimationFrame(render);
   
 }
 

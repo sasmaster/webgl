@@ -25,7 +25,7 @@ function run() {
     canvas.height =FBO_HEIGHT;// window.innerHeight;
     document.body.appendChild(canvas);
 
-
+   //as our offscreen FBO attachment has an ALPHA channel,we must do the same for the default FBO
     gl = canvas.getContext('webgl2', { antialias: false ,alpha:true});
     var isWebGL2 = !!gl;
     if (isWebGL2 === false) {
@@ -118,8 +118,8 @@ function run() {
 
     tex = createGLTexture(gl, gl.RGB, img.width, img.height,gl.CLAMP_TO_EDGE, false, false, img);
 
-    var msaaRenderBuffer = createMultisampledRenderBuffer(gl, gl.RGBA8 , FBO_WIDTH, FBO_HEIGHT,4);
-    var msaaDepthBuffer = createMultisampledRenderBuffer(gl,  gl.DEPTH_COMPONENT16, FBO_WIDTH, FBO_HEIGHT,4);
+    var msaaRenderBuffer = createMultisampledRenderBuffer(gl, gl.RGBA8 , FBO_WIDTH, FBO_HEIGHT,8);
+    var msaaDepthBuffer = createMultisampledRenderBuffer(gl,  gl.DEPTH_COMPONENT16, FBO_WIDTH, FBO_HEIGHT,8);
 
     //create offscreen multisampled FBO:
     fbo = createFrameBuffer(gl, null);
@@ -131,7 +131,6 @@ function run() {
     mat4.multiply(mvp, proj, model);
     gl.uniformMatrix4fv(mvpLoc, false, mvp);
 
-   // gl.enable(gl.GL_MULTISAMPLE);
     gl.enable(gl.DEPTH_TEST);
     gl.frontFace(gl.CCW);
     gl.enable(gl.CULL_FACE);
@@ -168,7 +167,7 @@ var rot = 0;
 function render() {
 
     //Pass 1: (Render to MSAA FBO)
-    gl.viewport(0, 0, 1280, 720);
+    gl.viewport(0, 0, FBO_WIDTH, FBO_HEIGHT);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, fbo.fbo);
     gl.clearColor(0.3, 0.3, 0.3, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -192,14 +191,16 @@ function render() {
 
 
 
-    //Pass 2:(render to screen, texture source is fbo render target)
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    gl.viewport(0, 0, w, h);
+    //Pass 2:(blit to screen)
 
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, fbo.fbo);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-    gl.blitFramebuffer(0, 0, 1280, 720, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+
+    /**
+     * This is IMPORTANT! In webgl,if src is MSAA,then blit area of src and dst
+     * MUST BE THE SAME SIZE.
+     */
+    gl.blitFramebuffer(0, 0,FBO_WIDTH, FBO_HEIGHT, 0, 0, FBO_WIDTH, FBO_HEIGHT, gl.COLOR_BUFFER_BIT, gl.NEAREST);
    
     requestAnimationFrame(render);
 

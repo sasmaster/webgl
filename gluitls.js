@@ -39,7 +39,6 @@ function createGLTexture(gl, format, w, h,wrapType, flip, genMipmaps, data)
  {
 
     var texture = gl.createTexture();
-   // gl.activeTexture(gl.TEXTURE0 + unit);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -104,18 +103,7 @@ function createFrameBuffer(gl,tex)
         fboObj.texRT = tex;
 
     } 
-   /*
 
-    if (depth === true) {
-        //TODO: attach depth buffer
-        var depthBuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, w, h);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-        fboObj.buffDepth = depthBuffer;
-    }
-*/
-   
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 

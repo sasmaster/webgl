@@ -101,12 +101,9 @@ function createFrameBuffer(gl,tex)
     {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
         fboObj.texRT = tex;
-
     } 
 
-
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
     fboObj.fbo = fbo;
     return fboObj;
 }

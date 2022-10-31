@@ -200,7 +200,9 @@ function render() {
      * This is IMPORTANT! In webgl,if src is MSAA,then blit area of src and dst
      * MUST BE THE SAME SIZE.
      */
-    gl.blitFramebuffer(0, 0,FBO_WIDTH, FBO_HEIGHT, 0, 0, FBO_WIDTH, FBO_HEIGHT, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+   // gl.blitFramebuffer(0, FBO_HEIGHT,FBO_WIDTH,0 , 0, 0, FBO_WIDTH, FBO_HEIGHT, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+
+    gl.blitFramebuffer(0, 0,FBO_WIDTH,FBO_HEIGHT, 0, 0, FBO_WIDTH, FBO_HEIGHT, gl.COLOR_BUFFER_BIT, gl.NEAREST);
    
     requestAnimationFrame(render);
 

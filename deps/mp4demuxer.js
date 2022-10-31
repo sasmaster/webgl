@@ -41,6 +41,7 @@ export class MP4Demuxer {
   #onChunk = null;
   #setStatus = null;
   #file = null;
+  #track = null;
 
   constructor(uri, {onConfig, onChunk, setStatus}) {
     this.#onConfig = onConfig;
@@ -80,10 +81,21 @@ export class MP4Demuxer {
     throw "avcC or hvcC not found";
   }
 
+  demux(sampleCount)
+  {
+    var sample = this.#file.getSample(this.#file.extractedTracks[0].trak,sampleCount);
+    this.#onChunk(new EncodedVideoChunk({
+    type: sample.is_sync ? "key" : "delta",
+    timestamp: 1e6 * sample.cts / sample.timescale,
+    duration: 1e6 * sample.duration / sample.timescale,
+    data: sample.data
+    }));
+  }
+
   #onReady(info) {
     this.#setStatus("demux", "Ready");
     const track = info.videoTracks[0];
-
+    this.#track = track;
     // Generate and emit an appropriate VideoDecoderConfig.
     this.#onConfig({
       codec: track.codec,
@@ -94,7 +106,7 @@ export class MP4Demuxer {
 
     // Start demuxing.
     this.#file.setExtractionOptions(track.id);
-    this.#file.start();
+   // this.#file.start();
   }
 
   #onSamples(track_id, ref, samples) {

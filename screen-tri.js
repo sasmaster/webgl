@@ -69,7 +69,7 @@ function run()
 
     texLoc = gl.getUniformLocation(prog,"tex");
     var img = images[0];
-    tex = createGLTexture(0,gl.RGB,img.width,img.height,gl.CLAMP_TO_EDGE,false,false,img);
+    tex = createGLTexture(0,gl.RGB,gl.RGB8,img.width,img.height,gl.CLAMP_TO_EDGE,false,false,img);
 
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.uniform1i(texLoc, 0);

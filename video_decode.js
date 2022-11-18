@@ -139,7 +139,7 @@ function run(config) {
   texLoc = gl.getUniformLocation(prog, "tex");
   //colorLoc = gl.getUniformLocation(prog,"borderColor");
 
-  tex = createGLTexture(gl, gl.RGB, config.codedWidth, config.codedHeight, gl.CLAMP_TO_EDGE, false, false, null);
+  tex = createGLTexture(gl, gl.RGB,gl.RGB8, config.codedWidth, config.codedHeight, gl.CLAMP_TO_EDGE, false, false, null);
 
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.uniform1i(texLoc, 0);

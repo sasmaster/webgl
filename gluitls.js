@@ -35,7 +35,7 @@ function createProgram(gl, vertexShaderSource, fragmentShaderSource)
     return program;
 };
 
-function createGLTexture(gl, format, w, h,wrapType, flip, genMipmaps, data)
+function createGLTexture(gl, format,intFormat, w, h,wrapType, flip, genMipmaps, data)
  {
 
     var texture = gl.createTexture();
@@ -46,11 +46,7 @@ function createGLTexture(gl, format, w, h,wrapType, flip, genMipmaps, data)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T,wrapType);
 
 
-    var intFormat = gl.RGB8;
-    if (format == gl.RGBA)
-    {
-        intFormat = gl.RGBA8;
-    }
+    
 
     if (genMipmaps === true)
     {

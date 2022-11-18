@@ -132,8 +132,8 @@ function run() {
     modelLoc = gl.getUniformLocation(prog, "model");
     var img = images[0];
 
-    tex = createGLTexture(gl, gl.RGB, img.width, img.height,gl.CLAMP_TO_EDGE, false, false, img);
-    var renderTex = createGLTexture(gl, gl.RGBA, 1280, 720,gl.CLAMP_TO_EDGE, false, false, null);
+    tex = createGLTexture(gl, gl.RGB, gl.RGB8, img.width, img.height,gl.CLAMP_TO_EDGE, false, false, img);
+    var renderTex = createGLTexture(gl, gl.RGBA,gl.RGBA8, 1280, 720,gl.CLAMP_TO_EDGE, false, false, null);
     //create offscreen FBO:
     fbo = createFrameBuffer(gl, renderTex);
     gl.uniform1i(texLoc, 0);

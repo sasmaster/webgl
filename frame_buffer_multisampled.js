@@ -116,7 +116,7 @@ function run() {
     modelLoc = gl.getUniformLocation(prog, "model");
     var img = images[0];
 
-    tex = createGLTexture(gl, gl.RGB, img.width, img.height,gl.CLAMP_TO_EDGE, false, false, img);
+    tex = createGLTexture(gl, gl.RGB, gl.RGB8, img.width, img.height,gl.CLAMP_TO_EDGE, false, false, img);
 
     var msaaRenderBuffer = createMultisampledRenderBuffer(gl, gl.RGBA8 , FBO_WIDTH, FBO_HEIGHT,8);
     var msaaDepthBuffer = createMultisampledRenderBuffer(gl,  gl.DEPTH_COMPONENT16, FBO_WIDTH, FBO_HEIGHT,8);

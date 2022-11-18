@@ -98,7 +98,7 @@ function run()
     mvpLoc = gl.getUniformLocation(prog, "mvp");
     texLoc = gl.getUniformLocation(prog,"tex");
     var img = images[0];
-    tex = createGLTexture(gl,gl.RGB,img.width,img.height,gl.CLAMP_TO_EDGE,false,false,img);
+    tex = createGLTexture(gl,gl.RGB,gl.RGB8,img.width,img.height,gl.CLAMP_TO_EDGE,false,false,img);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.uniform1i(texLoc, 0);
@@ -112,44 +112,7 @@ function run()
    requestAnimationFrame(render);
 
 }
-/*
-function createGLTexture(unit,format,w,h,flip,genMipmaps,data)
-{
-     
-     var texture = gl.createTexture();
-     gl.activeTexture(gl.TEXTURE0 + unit);
-     gl.bindTexture(gl.TEXTURE_2D, texture);
-     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
-     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-
-     var intFormat = gl.RGB8;
-     if(format == gl.RGBA)
-     {
-        intFormat = gl.RGBA8;
-     }
-
-     if(genMipmaps === true)
-     {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        gl.texStorage2D(gl.TEXTURE_2D, 1, intFormat, w, h);
-     }else
-     {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texStorage2D(gl.TEXTURE_2D, 1, intFormat, w, h);
-     }
-     
-    
-     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0,format, gl.UNSIGNED_BYTE, data);
-     if(genMipmaps === true)
-     {
-       gl.generateMipmap(gl.TEXTURE_2D);
-     }
-
-     return texture;
-
-}*/
+ 
 
 function onResize()
 {

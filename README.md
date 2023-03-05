@@ -34,6 +34,8 @@ texel_size.js - shows how to sample and draw a texture in screen space and only 
 
 video_decode.js - shows how to decode an mp4 video,using Web Codecs extensions (Chrome,Firefox only) and present on a webgl surface.
 
+gauss_blur_optimized_dynamic.js - shows fast (Separated) gaussian blur implementation using a technique by NVIDIA's to calculate coeffieicents in fragment shader
+
 
 
 

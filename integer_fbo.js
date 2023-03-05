@@ -129,7 +129,7 @@ function run() {
 
     // gl.uniform1ui(objIdLoc,0xff0000);
 
-    renderTex = createGLTexture(gl, gl.RED_INTEGER, gl.R16UI, CANVAS_W, CANVAS_H, gl.CLAMP_TO_EDGE, false, false, null);
+    renderTex = createGLTexture(gl, gl.RED, gl.R16UI, CANVAS_W, CANVAS_H, gl.CLAMP_TO_EDGE, false, false, null);
     //create offscreen FBO:
     offscreenFBO = createFrameBuffer(gl, renderTex);
 

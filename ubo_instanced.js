@@ -108,15 +108,13 @@ function init() {
     mvp = mat4.create();
    
    
-
-
     transformBuffer = new Float32Array(NUM_INSTANCES * 16);
 
     updateUBO(transformBuffer);
     
 
     gl.bufferData(gl.UNIFORM_BUFFER,transformBuffer,gl.DYNAMIC_DRAW);
-//gl.bindBuffer(gl.UNIFORM_BUFFER,null); keep it bound for updates
+  //gl.bindBuffer(gl.UNIFORM_BUFFER,null); keep it bound for updates
 
     gl.bindBufferBase(gl.UNIFORM_BUFFER,0,transformUBO);
 

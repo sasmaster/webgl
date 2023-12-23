@@ -7,7 +7,7 @@ var canvas = null;
 var pendingFrame = null;
 var startTime = null;
 var frameCount = 0;
-
+var sampleCount = 0;
 var decoders = [];
 
 class VideoDecoder {
@@ -19,7 +19,7 @@ class VideoDecoder {
   checkReady() {
     //if (playing && timeupdate) 
     {
-     // copyVideo = true;
+      // copyVideo = true;
     }
   }
 
@@ -60,7 +60,8 @@ class VideoDecoder {
 
 
     this.video.load(); // must call after setting/changing source
-    //video.play();
+   // this.video.play();
+   
 
     // alternative method -- 
     // create DIV in HTML:
@@ -74,47 +75,56 @@ class VideoDecoder {
     this.videoImage.width  = w;
     this.videoImage.height = h;
 
-    this.videoImageContext = this.videoImage.getContext('2d');
+    this.videoImageContext = this.videoImage.getContext('2d',{ willReadFrequently: true });
+    //this.videoImageContext.willReadFrequently = true;
     // background color if no video present
     this.videoImageContext.fillStyle = '#000000';
     this.videoImageContext.fillRect(0, 0, this.videoImage.width, this.videoImage.height);
 
+    const updateCanvas = (now, metadata) => {
+    
+      var data = this.decodeFrame();
+
+      updateGLTexture(gl, tex, gl.RGBA,this.videoImage.width,this.videoImage.height, false, data);
+      let count = metadata.mediaTime * 25;
+      console.log("Got frame: " + Math.round(count));
+       
+      this.video.requestVideoFrameCallback(updateCanvas);
+    }; 
+
+    this.video.requestVideoFrameCallback(updateCanvas);  
+    this.pause();
   }
 
-  play()
-  {
+  play() {
     this.video.play();
   }
 
-  pause()
-  {
-    this.video.stop();
+  pause() {
+    this.video.pause();
   }
 
-  seek()
-{
+  seek(frameNum) {
+    this.video.currentTime = frameNum / 25.0;
+  }
 
-}
+ 
 
   decodeFrame() {
 
-    if (this.video.readyState === this.video.HAVE_ENOUGH_DATA) 
+   // if (this.video.readyState === this.video.HAVE_ENOUGH_DATA)
     {
       this.videoImageContext.drawImage(this.video, 0, 0);
       const frame = this.videoImageContext.getImageData(0, 0, this.videoImage.width, this.videoImage.height);
       const data = frame.data;
-      return data;
-      //if(this.videoTexture) 
-      {
-      //  this.videoTexture.needsUpdate = true;
-      }
+      return new Uint8Array(data);
+     
     }
   }
 
 }
 
-function updateVideoTexture(gl, texture, video)
-{
+function updateVideoTexture(gl, texture, video) {
   const level = 0;
   const internalFormat = gl.RGBA;
   const srcFormat = gl.RGBA;
@@ -128,130 +138,138 @@ function updateVideoTexture(gl, texture, video)
     srcType,
     video
   );
-  }
+}
+
+
+
+function init() {
+
+  let btn = document.createElement("Button");
+  btn.innerHTML = "Forward";
+  btn.onclick = function () {
+    //alert("Button is clicked");
+    forward();
+  };
+  document.body.appendChild(btn);
+
+  btn = document.createElement("Button");
+  btn.innerHTML = "Backward";
+  btn.onclick = function ()
+  {
+    //alert("Button is clicked");
+    backward();
+  };
+  document.body.appendChild(btn);
+
+  const dataUri = "/assets/videoFrames.mp4";
+  var decoder = new VideoDecoder(1920, 1080, dataUri);
+
+  decoders.push(decoder);
+
+  run();
+
+}
+
+function forward() {
+  //demuxer.demux(sampleCount);
   
+ 
+ //  decoders[0].play();
+   decoders[0].seek(sampleCount);
+ //  decoders[0].pause();
+ // render(decoders[0].decodeFrame());
+  
+  sampleCount++;
+  console.log("Frame num:%i",sampleCount);
+}
+
+function backward()
+{
+  if (sampleCount <= 0) return;
+  // demuxer.demux(sampleCount);
+  sampleCount--;
+}
+
+function run(config) {
+
+  canvas        = document.createElement('canvas');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
 
 
-  function init() {
-
-    let btn = document.createElement("Button");
-    btn.innerHTML = "Forward";
-    btn.onclick = function () {
-      //alert("Button is clicked");
-      forward();
-    };
-    document.body.appendChild(btn);
-
-    btn = document.createElement("Button");
-    btn.innerHTML = "Backward";
-    btn.onclick = function () {
-      //alert("Button is clicked");
-      backward();
-    };
-    document.body.appendChild(btn);
-
-    const dataUri = "/assets/videoFrames.mp4";
-    var decoder = new VideoDecoder(1920,1080,dataUri);
-    decoders.push(decoder);
-
-    run();
-     
+  gl = canvas.getContext('webgl2', { antialias: false });
+  var isWebGL2 = !!gl;
+  if (isWebGL2 === false)
+  {
+    console.error("WebGL2 context not supported");
+    return;
   }
 
-  function forward() {
-    //demuxer.demux(sampleCount);
-    decoders[0].play();
-    render(decoders[0].decodeFrame());
-    decoders[0].pause();
-    sampleCount++;
+  const vert = [
+    "#version 300 es",
+    "void main()",
+    "{",
+    "    float x = -1.0 + float((gl_VertexID & 1) << 2);",
+    "    float y = -1.0 + float((gl_VertexID & 2) << 1);",
+    "    gl_Position = vec4(x, y, 0.0, 1.0);",
+    "}"
+  ].join('\n');
+
+  const frag = [
+    "#version 300 es",
+    "precision highp float; ",
+    "precision highp int;",
+    "uniform sampler2D tex;",
+    "out vec4 oColor;",
+    "void main(){",
+    "vec2 textureDims = vec2(textureSize(tex,0));//WEBGL 2.0!",
+    "vec2 texelSize = 1.0 / textureDims;",
+    "vec2 texSizeFragCoords = vec2(gl_FragCoord.xy  * texelSize);",
+    "oColor = texture(tex, vec2(texSizeFragCoords.x, 1.0 - texSizeFragCoords.y));",
+    "}"
+  ].join('\n');
+
+  var prog = createProgram(gl, vert, frag);
+  if (!prog == null)
+  {
+    console.error("failed to create shader prog");
+    return;
   }
 
-  function backward() {
-    if (sampleCount <= 0) return;
-   // demuxer.demux(sampleCount);
-    sampleCount--;
-  }
+  gl.useProgram(prog);
 
-  function run(config) {
-    canvas = document.createElement('canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    document.body.appendChild(canvas);
+  texLoc = gl.getUniformLocation(prog, "tex");
+  //colorLoc = gl.getUniformLocation(prog,"borderColor");
+  tex = createGLTexture(gl, gl.RGBA, gl.RGBA8, decoders[0].videoImage.width, decoders[0].videoImage.height,
+    gl.CLAMP_TO_EDGE, false, false, null);
 
-
-    gl = canvas.getContext('webgl2', { antialias: false });
-    var isWebGL2 = !!gl;
-    if (isWebGL2 === false) {
-      console.error("WebGL2 context not supported");
-      return;
-    }
-
-    const vert = [
-      "#version 300 es",
-      "void main()",
-      "{",
-      "    float x = -1.0 + float((gl_VertexID & 1) << 2);",
-      "    float y = -1.0 + float((gl_VertexID & 2) << 1);",
-      "    gl_Position = vec4(x, y, 0.0, 1.0);",
-      "}"
-    ].join('\n');
-
-    const frag = [
-      "#version 300 es",
-      "precision highp float; ",
-      "precision highp int;",
-      "uniform sampler2D tex;",
-      "out vec4 oColor;",
-      "void main(){",
-      "vec2 textureDims = vec2(textureSize(tex,0));//WEBGL 2.0!",
-      "vec2 texelSize = 1.0 / textureDims;",
-      "vec2 texSizeFragCoords = vec2(gl_FragCoord.xy  * texelSize);",
-      "oColor = texture(tex, vec2(texSizeFragCoords.x, 1.0 - texSizeFragCoords.y));",
-      "}"
-    ].join('\n');
-
-    var prog = createProgram(gl, vert, frag);
-    if (!prog == null) {
-      console.error("failed to create shader prog");
-      return;
-    }
-
-    gl.useProgram(prog);
-
-    texLoc = gl.getUniformLocation(prog, "tex");
-    //colorLoc = gl.getUniformLocation(prog,"borderColor");
-
-    tex = createGLTexture(gl, gl.RGBA, gl.RGBA8,decoders[0].videoImage.width,decoders[0].videoImage.height,
-       gl.CLAMP_TO_EDGE, false, false, null);
-
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.uniform1i(texLoc, 0);
-    gl.activeTexture(gl.TEXTURE0);
-    window.addEventListener('resize', onResize);
-
-  }
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.uniform1i(texLoc, 0);
+  gl.activeTexture(gl.TEXTURE0);
+  window.addEventListener('resize', onResize);
+  requestAnimationFrame(render);
+}
 
 
 
-  function onResize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    canvas.width = w;
-    canvas.height = h;
-    gl.viewport(0, 0, w, h);
-  }
+function onResize() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+  gl.viewport(0, 0, w, h);
+}
 
-  function render(frame) {
-    gl.clearColor(0.2, 0.2, 0.2, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+function render() {
+ 
+  gl.clearColor(0.2, 0.2, 0.2, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    updateGLTexture(gl, tex, gl.RGBA, false, frame);
-   
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+   requestAnimationFrame(render);
 
-    // requestAnimationFrame(render);
+}
 
-  }
-
-  window.addEventListener('load', init);
+window.addEventListener('load', init);

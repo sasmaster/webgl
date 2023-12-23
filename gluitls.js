@@ -70,13 +70,11 @@ function createGLTexture(gl, format,intFormat, w, h,wrapType, flip, genMipmaps, 
 
 }
 
-function updateGLTexture(gl,texture, format, genMipmaps, data)
+function updateGLTexture(gl,texture, format,w,h, genMipmaps, data)
  {
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
-    gl.texSubImage2D(
-        gl.TEXTURE_2D, 0, 0, 0, format,
-        gl.UNSIGNED_BYTE, data);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0,w,h, format, gl.UNSIGNED_BYTE, data);
 
     if (genMipmaps === true)
     {

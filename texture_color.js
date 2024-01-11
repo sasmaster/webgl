@@ -95,15 +95,14 @@ function run() {
     const tex_h = 512;
     var colorData = new Uint8Array(tex_w * tex_h * 3);
    //clear texture to blue 
-    for (var i = 0; i < colorData.length; i += 3) {
+    for (var i = 0; i < colorData.length; i += 3)
+    {
         colorData[i] = 0;
         colorData[i + 1] = 0;
         colorData[i + 2] = 255;
     }
 
-    tex = createGLTexture(gl, gl.RGB, gl.RGB8, tex_w, tex_h, gl.CLAMP_TO_EDGE, false, false, null);
-    //for some reason WebGL doesn't allow me to update texture with color during creation.
-    updateGLTexture(gl, tex, gl.RGB, tex_w, tex_h, false, colorData);
+    tex = createGLTexture(gl, gl.RGB, gl.RGB8, tex_w, tex_h, gl.CLAMP_TO_EDGE, false, false, colorData);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.uniform1i(texLoc, 0);

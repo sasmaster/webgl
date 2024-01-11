@@ -45,9 +45,6 @@ function createGLTexture(gl, format,intFormat, w, h,wrapType, flip, genMipmaps, 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S,wrapType);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T,wrapType);
 
-
-    
-
     if (genMipmaps === true)
     {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
@@ -59,7 +56,7 @@ function createGLTexture(gl, format,intFormat, w, h,wrapType, flip, genMipmaps, 
     }
 
     if (data != null) {
-        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, format, gl.UNSIGNED_BYTE, data);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0,w,h, format, gl.UNSIGNED_BYTE, data);
     }
 
     if (genMipmaps === true) {
@@ -67,7 +64,6 @@ function createGLTexture(gl, format,intFormat, w, h,wrapType, flip, genMipmaps, 
     }
 
     return texture;
-
 }
 
 function updateGLTexture(gl,texture, format,w,h, genMipmaps, data)
